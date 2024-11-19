@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  webserver:
+    image: kwjdgh/taba
+    container_name: webserver
+    networks:
+      - myboot
+    ports:
+      - "8080:8080"
+    restart: always
+
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    networks:
+      - myboot
+    ports:
+      - "27017:27017"
+    restart: always
+
+networks:
+  myboot:
+    driver: bridge
