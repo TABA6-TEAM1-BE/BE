@@ -1,4 +1,4 @@
-package com.example.webserver;
+package com.example.webserver.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

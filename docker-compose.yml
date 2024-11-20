@@ -1,15 +1,6 @@
 version: '3.8'
 
 services:
-  webserver:
-    image: kwjdgh/taba
-    container_name: webserver
-    networks:
-      - myboot
-    ports:
-      - "8080:8080"
-    restart: always
-
   mongodb:
     image: mongo
     container_name: mongodb
@@ -17,6 +8,16 @@ services:
       - myboot
     ports:
       - "27017:27017"
+    restart: always
+  webserver:
+    image: kwjdgh/taba
+    container_name: webserver
+    depends_on:
+      - mongodb
+    networks:
+      - myboot
+    ports:
+      - "8080:8080"
     restart: always
 
 networks:
