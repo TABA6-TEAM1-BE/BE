@@ -1,7 +1,9 @@
 on:
   push:
     branches:
-      - origin
+      - master
+
+
 jobs:
   MY-DEPLOY-JOB:
     runs-on: ubuntu-latest
