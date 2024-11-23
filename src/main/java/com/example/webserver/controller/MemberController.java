@@ -20,7 +20,7 @@ public class MemberController {
 
     @PostMapping("/test")
     private String test(){
-        return "test ok";
+        return "test okkkk";
     }
 
     @PostMapping("/sign-up")
