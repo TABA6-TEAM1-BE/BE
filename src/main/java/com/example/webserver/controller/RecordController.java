@@ -37,7 +37,7 @@ public class RecordController {
         return recordService.getUncheckedRecordsByUsername(userDetails.getUsername());
     }
 
-    // 해당 날짜의 deviceType 별 Record 조회
+    // 해당 날짜의 deviceType 별로 Record 조회
     @GetMapping("/records/device-type/{deviceType}/date")
     public ResponseEntity<?> getRecordsByDeviceType(@AuthenticationPrincipal UserDetails userDetails, @PathVariable String deviceType, @RequestParam("date") String recordDate) {
         // 문자열을 LocalDate로 변환
