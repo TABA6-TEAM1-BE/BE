@@ -31,7 +31,7 @@ public class RecordController {
         return ResponseEntity.ok(records);
     }
 
-    // 알림 확인 안 한 Record 조회 -> checked 가 false
+    // 알림 미확인 Record 조회 -> checked 가 false
     @GetMapping("/records/unchecked")
     public ResponseEntity<?> getUncheckedRecords(@AuthenticationPrincipal UserDetails userDetails) {
         return recordService.getUncheckedRecordsByUsername(userDetails.getUsername());
