@@ -32,6 +32,8 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+	implementation 'com.amazonaws:aws-java-sdk-s3:1.12.767'
+	implementation 'io.awspring.cloud:spring-cloud-aws-starter:3.1.1'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
