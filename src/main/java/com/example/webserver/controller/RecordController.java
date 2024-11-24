@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -42,7 +43,6 @@ public class RecordController {
     public ResponseEntity<?> getRecordsByDeviceType(@AuthenticationPrincipal UserDetails userDetails, @PathVariable String deviceType, @RequestParam("date") String recordDate) {
         // 문자열을 LocalDate로 변환
         LocalDate date = LocalDate.parse(recordDate);
-
         return recordService.getRecordsByDeviceTypeAndDate(userDetails.getUsername(), deviceType, date);
     }
 
