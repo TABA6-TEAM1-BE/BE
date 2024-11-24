@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
 import java.time.LocalDateTime;
 
 @Document(collection = "record")
@@ -24,9 +23,12 @@ public class Record {
 
     private LocalDateTime time;
 
+    private boolean checked;    // 알림 확인 유무
+
     public Record(String memberId, String deviceType, LocalDateTime time) {
         this.memberId = memberId;
         this.deviceType = deviceType;
         this.time = time;
+        this.checked = false;
     }
 }
