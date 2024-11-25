@@ -63,45 +63,64 @@ public class RecordService {
 
     // checked 가 false 인 Record 반환
     public ResponseEntity<?> getUncheckedRecordsByUsername(String username) {
-        List<Record> records = recordRepository.findAllByMemberIdAndCheckedIsFalse(username);
-        log.info("Unchecked Records: {}", records);
+        try {
+            List<Record> records = recordRepository.findAllByMemberIdAndCheckedIsFalse(username);
+            log.info("Unchecked Records: {}", records);
 
-        if (records.isEmpty()) {
-            return ResponseEntity.status(404).body("Unchecked Record가 존재하지 않습니다: " + username);
+            if (records.isEmpty()) {
+                return ResponseEntity.status(404).body("요청 실패: Unchecked Record가 존재하지 않습니다: " + username);
+            }
+
+            return ResponseEntity.ok(records);
+        } catch (Exception e) {
+            log.error("Error while fetching unchecked records: {}", e.getMessage());
+            return ResponseEntity.status(500).body("서버 에러: Unchecked Record를 조회하는 중 문제가 발생했습니다.");
         }
-        return ResponseEntity.ok(records);
     }
 
     // 주어진 날짜에서 deviceType 별로 Record 반환
     public ResponseEntity<?> getRecordsByDeviceTypeAndDate(String username, String deviceType, LocalDate date) {
-        // 날짜의 시작 시간과 종료 시간 계산
-        LocalDateTime startDate = date.atStartOfDay(); // 00:00:00
-        LocalDateTime endDate = startDate.plusDays(1); // 다음 날 00:00:00
+        try {
+            // 날짜의 시작 시간과 종료 시간 계산
+            LocalDateTime startDate = date.atStartOfDay(); // 00:00:00
+            LocalDateTime endDate = startDate.plusDays(1); // 다음 날 00:00:00
 
-        List<Record> records = recordRepository.findAllByMemberIdAndDeviceTypeAndTimeBetween(username, deviceType, startDate, endDate);
+            List<Record> records = recordRepository.findAllByMemberIdAndDeviceTypeAndTimeBetween(username, deviceType, startDate, endDate);
+            log.info("Records by deviceType and date: {}", records);
 
-        if (records.isEmpty()) {
-            return ResponseEntity.status(404).body(deviceType + "에 대한 Record가 존재하지 않습니다. 날짜: " + date);
+            if (records.isEmpty()) {
+                return ResponseEntity.status(404).body("요청 실패: " + deviceType + "에 대한 Record가 존재하지 않습니다. 날짜: " + date);
+            }
+
+            return ResponseEntity.ok(records);
+        } catch (Exception e) {
+            log.error("Error while fetching records by deviceType and date: {}", e.getMessage());
+            return ResponseEntity.status(500).body("서버 에러: Record를 조회하는 중 문제가 발생했습니다.");
         }
-        return ResponseEntity.ok(records);
     }
 
     // 클라이언트가 알림 확인 시 checked 상태 업데이트
     public ResponseEntity<?> updateCheckedStatus(UserDetails userDetails, String id) {
-        Optional<Record> recordOptional = recordRepository.findById(id);
+        try {
+            Optional<Record> recordOptional = recordRepository.findById(id);
 
-        if (recordOptional.isPresent()) {
-            Record record = recordOptional.get();
+            if (recordOptional.isPresent()) {
+                Record record = recordOptional.get();
 
-            // Record의 memberId와 userDetails의 username이 같은지 확인
-            if (!record.getMemberId().equals(userDetails.getUsername())) {
-                return ResponseEntity.status(403).body("사용자가 일치하지 않습니다.");
+                // Record의 memberId와 userDetails의 username이 같은지 확인
+                if (!record.getMemberId().equals(userDetails.getUsername())) {
+                    return ResponseEntity.status(403).body("사용자가 일치하지 않습니다.");
+                }
+
+                record.setChecked(true); // checked 상태 업데이트
+                recordRepository.save(record);
+                return ResponseEntity.ok(record);
             }
-
-            record.setChecked(true); // checked 상태 업데이트
-            recordRepository.save(record);
-            return ResponseEntity.ok(record);
+            return ResponseEntity.status(404).body("요청 실패: 해당 Record가 존재하지 않습니다.: " + id);
+        } catch (Exception e) {
+            log.error("Error while updating checked status: {}", e.getMessage());
+            return ResponseEntity.status(500).body("서버 에러: Checked 상태를 업데이트하는 중 문제가 발생했습니다.");
         }
-        return ResponseEntity.status(404).body("해당 Record가 존재하지 않습니다.: " + id);
     }
+
 }
