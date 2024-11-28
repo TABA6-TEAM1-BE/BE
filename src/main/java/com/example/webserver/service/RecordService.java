@@ -61,7 +61,7 @@ public class RecordService {
         return "세탁기"; // 샘플 반환값
     }
 
-
+    // 음성 -> 백앤드 -> ai 모델
     public Record fileInput(CustomUserDetails userDetails, MultipartFile file) throws Exception {
         // 자동 증가 recordIdx 생성
         long recordIdx = counterService.getNextRecordIdxSequence("record_idx");
@@ -84,6 +84,7 @@ public class RecordService {
         return record;
     }
 
+    // ai 모델 -> 백앤드로 결과값 보내면 저장
     public boolean updateRecordWithAIResult(String recordIdx, String result) {
         Optional<Record> optionalRecord = recordRepository.findByRecordIdx(recordIdx);
 
