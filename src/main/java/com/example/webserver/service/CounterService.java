@@ -1,6 +1,7 @@
 package com.example.webserver.service;
 
-import com.example.webserver.entity.Counter;
+import com.example.webserver.entity.RecordIdx;
+import com.example.webserver.entity.UserIdx;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -14,12 +15,21 @@ import org.springframework.stereotype.Service;
 public class CounterService {
     private final MongoOperations mongoOperations;
 
-    public long getNextSequence(String seqName) {
+    public long getNextUserIdxSequence(String seqName) {
         Query query = new Query(Criteria.where("_id").is(seqName));
         Update update = new Update().inc("seq", 1); // seq 값을 1 증가
         FindAndModifyOptions options = FindAndModifyOptions.options().returnNew(true).upsert(true);
 
-        Counter counter = mongoOperations.findAndModify(query, update, options, Counter.class);
+        UserIdx counter = mongoOperations.findAndModify(query, update, options, UserIdx.class);
+        return counter != null ? counter.getSeq() : 1; // seq 값 반환
+    }
+
+    public long getNextRecordIdxSequence(String seqName) {
+        Query query = new Query(Criteria.where("_id").is(seqName));
+        Update update = new Update().inc("seq", 1); // seq 값을 1 증가
+        FindAndModifyOptions options = FindAndModifyOptions.options().returnNew(true).upsert(true);
+
+        RecordIdx counter = mongoOperations.findAndModify(query, update, options, RecordIdx.class);
         return counter != null ? counter.getSeq() : 1; // seq 값 반환
     }
 }
