@@ -1,15 +1,15 @@
 package com.example.webserver.controller;
 
+import com.example.webserver.login.CustomUserDetails;
 import com.example.webserver.login.JwtToken;
 import com.example.webserver.login.SignInDto;
 import com.example.webserver.login.SignUpDto;
 import com.example.webserver.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -40,6 +40,25 @@ public class MemberController {
         log.info("request username = {}, password = {}", username, password);
         log.info("jwtToken accessToken = {}, refreshToken = {}", jwtToken.getAccessToken(), jwtToken.getRefreshToken());
         return jwtToken;
+    }
+
+    @GetMapping("/test")
+    public String testEndpoint() {
+        // 현재 인증된 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "사용자가 인증되지 않았습니다.";
+        }
+
+        // 사용자 정보를 CustomUserDetails로 캐스팅
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        return String.format(
+                "인증 성공! 사용자명: %s, ID: %s, 권한: %s",
+                userDetails.getUsername(),
+                userDetails.getIdx(),
+                userDetails.getAuthorities()
+        );
     }
 
 
