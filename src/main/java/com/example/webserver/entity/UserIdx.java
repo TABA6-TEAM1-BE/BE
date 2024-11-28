@@ -7,8 +7,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @NoArgsConstructor
-@Document(collection = "counters")
-public class Counter {
+@Document(collection = "userIdx")
+public class UserIdx {
     @Id
     private String id;
     private long seq;  // 증가되는 시퀀스 값
