@@ -17,13 +17,15 @@ import java.util.stream.Collectors;
 @Builder
 public class CustomUserDetails implements UserDetails {
 
+    private String idx;
+
     private String username;
 
     private String password;
 
-
     @Builder.Default
     private List<String> roles = new ArrayList<>();
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles.stream()

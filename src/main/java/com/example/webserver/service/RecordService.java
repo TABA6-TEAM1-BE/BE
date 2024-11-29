@@ -1,14 +1,17 @@
 package com.example.webserver.service;
 
 import com.example.webserver.entity.Record;
+import com.example.webserver.login.CustomUserDetails;
 import com.example.webserver.repository.RecordRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,6 +23,8 @@ import java.util.Optional;
 public class RecordService {
     private static final Logger log = LoggerFactory.getLogger(RecordService.class);
     private final RecordRepository recordRepository;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final CounterService counterService;
 
     public String classifySound(MultipartFile file) throws Exception {
         // AI 모델 호출 로직 (샘플로 REST 호출 방식 사용)
@@ -33,7 +38,7 @@ public class RecordService {
     }
 
 
-    public Record saveRecord(UserDetails userDetails, MultipartFile file) throws Exception {
+    public Record saveRecord(CustomUserDetails userDetails, MultipartFile file) throws Exception {
 
         String deviceType = classifySound(file);
         LocalDateTime time = LocalDateTime.now();
@@ -50,11 +55,55 @@ public class RecordService {
         return record;
     }
 
-
     private String callAiModel(MultipartFile file, String url) {
         // AI 모델 호출 및 결과 반환
         // HTTP Client 라이브러리 필요 (예: RestTemplate, WebClient 등)
         return "세탁기"; // 샘플 반환값
+    }
+
+    // 음성 -> 백앤드 -> ai 모델
+    public Record fileInput(CustomUserDetails userDetails, MultipartFile file) throws Exception {
+        // 자동 증가 recordIdx 생성
+        long recordIdx = counterService.getNextRecordIdxSequence("record_idx");
+
+        // 현재 시간 저장
+        LocalDateTime time = LocalDateTime.now();
+
+        // AI 모델 호출 로직 (샘플로 REST 호출 방식 사용) ... 이후 추가 해야함 지금은 생략
+        String aiModelUrl = "http://ai-model-service/analyze";
+
+        // Record 생성 후 저장
+        Record record = new Record();
+        record.setRecordIdx(String.valueOf(recordIdx)); // 자동 생성된 recordIdx
+        record.setMemberId(userDetails.getUsername());
+        record.setTime(time); // 현재 시간
+
+        recordRepository.save(record);
+        log.info("Record created: recordIdx={}, memberId={}, time={}", recordIdx, userDetails.getUsername(), time);
+
+        return record;
+    }
+
+    // ai 모델 -> 백앤드로 결과값 보내면 저장
+    public boolean updateRecordWithAIResult(String recordIdx, String result) {
+        Optional<Record> optionalRecord = recordRepository.findByRecordIdx(recordIdx);
+
+        if (optionalRecord.isPresent()) {
+            Record record = optionalRecord.get();
+
+            // 결과값과 결과 시간 업데이트
+            record.setDeviceType(result);
+            record.setResultTime(LocalDateTime.now());
+
+            recordRepository.save(record);
+
+            log.info("Record updated: recordIdx={}, result={}, resultTime={}",
+                    recordIdx, result, record.getResultTime());
+            return true;
+        } else {
+            log.warn("Record with recordIdx {} not found", recordIdx);
+            return false;
+        }
     }
 
     public List<Record> getRecordsByUsername(String username) {
@@ -85,7 +134,7 @@ public class RecordService {
             LocalDateTime startDate = date.atStartOfDay(); // 00:00:00
             LocalDateTime endDate = startDate.plusDays(1); // 다음 날 00:00:00
 
-            List<Record> records = recordRepository.findAllByMemberIdAndDeviceTypeAndTimeBetween(username, deviceType, startDate, endDate);
+            List<Record> records = recordRepository.findAllByMemberIdAndDeviceTypeAndResultTimeBetween(username, deviceType, startDate, endDate);
             log.info("Records by deviceType and date: {}", records);
 
             if (records.isEmpty()) {
@@ -100,7 +149,7 @@ public class RecordService {
     }
 
     // 클라이언트가 알림 확인 시 checked 상태 업데이트
-    public ResponseEntity<?> updateCheckedStatus(UserDetails userDetails, String id) {
+    public ResponseEntity<?> updateCheckedStatus(CustomUserDetails userDetails, String id) {
         try {
             Optional<Record> recordOptional = recordRepository.findById(id);
 

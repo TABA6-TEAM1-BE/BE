@@ -33,6 +33,8 @@ public class JwtTokenProvider {
 
     // CustomUserDetails 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
     public JwtToken generateToken(Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
         // 권한 가져오기
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -44,6 +46,7 @@ public class JwtTokenProvider {
         Date accessTokenExpiresIn = new Date(now + 86400000);
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
+                .claim("idx", userDetails.getIdx())
                 .claim("auth", authorities)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -76,9 +79,16 @@ public class JwtTokenProvider {
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 
-        // UserDetails 객체를 만들어서 Authentication return
-        // UserDetails: interface, User: UserDetails를 구현한 class
-        UserDetails principal = new User(claims.getSubject(), "", authorities);
+        // CustomUserDetails 생성
+        CustomUserDetails principal = CustomUserDetails.builder()
+                .idx(claims.get("idx", String.class)) // idx 추가
+                .username(claims.getSubject())
+                .password("") // 비밀번호는 포함하지 않음
+                .roles(authorities.stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.toList()))
+                .build();
+
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
 
