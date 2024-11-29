@@ -17,11 +17,15 @@ public class Record {
     @Id
     private String id;
 
+    private String recordIdx;
+
     private String memberId;
 
     private String deviceType;
 
-    private LocalDateTime time;
+    private LocalDateTime time;     // 음성파일 받고 Ai 모델에게 전달 시 시간
+
+    private LocalDateTime resultTime;   // 모델 결과값 반환 시 시간
 
     private boolean checked;    // 알림 확인 유무
 
