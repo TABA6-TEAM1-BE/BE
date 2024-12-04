@@ -26,7 +26,6 @@ public class RecordService {
     private static final Logger log = LoggerFactory.getLogger(RecordService.class);
     private final RecordRepository recordRepository;
     private final MemberRepository memberRepository;
-    private final SimpMessagingTemplate messagingTemplate;
     private final CounterService counterService;
 
     public String classifySound(MultipartFile file) throws Exception {
@@ -70,12 +69,8 @@ public class RecordService {
         return recordRepository.findByRecordIdx(recordIdx);
     };
 
-    public Optional<Member> getMemberByUsername(String username) {
-        return memberRepository.findByUsername(username);
-    };
-
     // 음성 -> 백앤드 -> ai 모델
-    public Record fileInput(String username, MultipartFile file) throws Exception {
+    public Record fileInput(CustomUserDetails userDetails, MultipartFile file) throws Exception {
         // 자동 증가 recordIdx 생성
         long recordIdx = counterService.getNextRecordIdxSequence("record_idx");
 
@@ -85,8 +80,7 @@ public class RecordService {
         // AI 모델 호출 로직 (샘플로 REST 호출 방식 사용) ... 이후 추가 해야함 지금은 생략
         String aiModelUrl = "http://ai-model-service/analyze";
 
-        // username 으로 member 에서 userIdx(idx) 가져오기
-        String userIdx =  getMemberByUsername(username).get().getIdx();
+        String userIdx = userDetails.getIdx();
 
         // Record 생성 후 저장
         Record record = new Record();
@@ -126,13 +120,14 @@ public class RecordService {
     }
 
     // checked 가 false 인 Record 반환
-    public ResponseEntity<?> getUncheckedRecordsByUsername(String username) {
+    public ResponseEntity<?> getUncheckedRecordsByUsername(CustomUserDetails userDetails) {
         try {
-            List<Record> records = recordRepository.findAllByUserIdxAndCheckedIsFalse(username);
+            String userIdx = userDetails.getIdx();
+            List<Record> records = recordRepository.findAllByUserIdxAndCheckedIsFalse(userIdx);
             log.info("Unchecked Records: {}", records);
 
             if (records.isEmpty()) {
-                return ResponseEntity.status(404).body("요청 실패: Unchecked Record가 존재하지 않습니다: " + username);
+                return ResponseEntity.status(404).body("요청 실패: Unchecked Record가 존재하지 않습니다: " + userIdx);
             }
 
             return ResponseEntity.ok(records);
@@ -143,14 +138,13 @@ public class RecordService {
     }
 
     // 주어진 날짜에서 deviceType 별로 Record 반환
-    public ResponseEntity<?> getRecordsByDeviceTypeAndDate(String username, String deviceType, LocalDate date) {
+    public ResponseEntity<?> getRecordsByDeviceTypeAndDate(CustomUserDetails userDetails, String deviceType, LocalDate date) {
         try {
             // 날짜의 시작 시간과 종료 시간 계산
             LocalDateTime startDate = date.atStartOfDay(); // 00:00:00
             LocalDateTime endDate = startDate.plusDays(1); // 다음 날 00:00:00
 
-            // username 으로 member 에서 userIdx(idx) 가져오기
-            String userIdx =  getMemberByUsername(username).get().getIdx();
+            String userIdx =  userDetails.getIdx();
 
             List<Record> records = recordRepository.findAllByUserIdxAndDeviceTypeAndTimeBetween(userIdx, deviceType, startDate, endDate);
             log.info("Records by deviceType and date: {}", records);
@@ -167,7 +161,7 @@ public class RecordService {
     }
 
     // 클라이언트가 알림 확인 시 checked 상태 업데이트
-    public ResponseEntity<?> updateCheckedStatus(String username, String id) {
+    public ResponseEntity<?> updateCheckedStatus(String id) {
         try {
             Optional<Record> recordOptional = recordRepository.findById(id);
 
