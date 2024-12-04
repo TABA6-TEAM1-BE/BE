@@ -40,14 +40,14 @@ public class RecordController {
     // 음성파일 백앤드에서 받아서 recordIdx, time 저장 후 ai 넘겨줌
     @PostMapping("/input")
     public ResponseEntity<Record> fileInput(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam("file") MultipartFile file) throws Exception {
-        Record record = recordService.fileInput(userDetails.getUsername(), file);
+        Record record = recordService.fileInput(userDetails, file);
         return ResponseEntity.ok(record);
     }
 
     // 알림 미확인 Record 조회 -> checked 가 false
     @GetMapping("/records/unchecked")
     public ResponseEntity<?> getUncheckedRecords(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return recordService.getUncheckedRecordsByUsername(userDetails.getUsername());
+        return recordService.getUncheckedRecordsByUsername(userDetails);
     }
 
     // 해당 날짜의 deviceType 별로 Record 조회
@@ -55,12 +55,12 @@ public class RecordController {
     public ResponseEntity<?> getRecordsByDeviceType(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable String deviceType, @RequestParam("date") String recordDate) {
         // 문자열을 LocalDate로 변환
         LocalDate date = LocalDate.parse(recordDate);
-        return recordService.getRecordsByDeviceTypeAndDate(userDetails.getUsername(), deviceType, date);
+        return recordService.getRecordsByDeviceTypeAndDate(userDetails, deviceType, date);
     }
 
     // 클라이언트가 알림 확인 시 checked -> true 로 업데이트
     @PatchMapping("/records/{id}/checked")
-    public ResponseEntity<?> updateCheckedStatus(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable String id) {
-        return recordService.updateCheckedStatus(userDetails.getUsername(), id);
+    public ResponseEntity<?> updateCheckedStatus(@PathVariable String id) {
+        return recordService.updateCheckedStatus(id);
     }
 }
