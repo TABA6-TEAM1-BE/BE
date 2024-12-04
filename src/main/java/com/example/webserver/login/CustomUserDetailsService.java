@@ -19,6 +19,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
+    // 로그인 시에 DB 에서 유저 정보와 권한 정보를 가져와서 해당 정보를 기반으로 CustomUserDetails 객체를 생성해 리턴
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return memberRepository.findByUsername(username)
@@ -26,7 +27,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("해당하는 회원을 찾을 수 없습니다."));
     }
 
-    // 해당하는 User 의 데이터가 존재한다면 UserDetails 객체로 만들어서 return
+    // DB 에 있는 사용자의 아이디와 비밀번호를 담고 있는 CustomUserDetails 생성
+    // -> authenticationManager 가 이 객체와 UsernamePasswordAuthenticationToken 과 비교하여 사용자 인증을 해줌
     private UserDetails createUserDetails(Member member) {
         return CustomUserDetails.builder()
                 .idx(member.getIdx())

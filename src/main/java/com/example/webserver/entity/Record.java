@@ -19,7 +19,7 @@ public class Record {
 
     private String recordIdx;
 
-    private String memberId;
+    private String userIdx;
 
     private String deviceType;
 
@@ -29,8 +29,8 @@ public class Record {
 
     private boolean checked;    // 알림 확인 유무
 
-    public Record(String memberId, String deviceType, LocalDateTime time) {
-        this.memberId = memberId;
+    public Record(String userIdx, String deviceType, LocalDateTime time) {
+        this.userIdx = userIdx;
         this.deviceType = deviceType;
         this.time = time;
         this.checked = false;

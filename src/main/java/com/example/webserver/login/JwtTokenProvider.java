@@ -83,7 +83,7 @@ public class JwtTokenProvider {
         CustomUserDetails principal = CustomUserDetails.builder()
                 .idx(claims.get("idx", String.class)) // idx 추가
                 .username(claims.getSubject())
-                .password("") // 비밀번호는 포함하지 않음
+                .password("") // 비밀번호는 포함하지 않음 -> 아이디와 비밀번호가 아닌 jwt로 사용자를 구별
                 .roles(authorities.stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toList()))

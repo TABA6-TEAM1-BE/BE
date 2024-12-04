@@ -54,10 +54,14 @@ public class MemberService {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
         log.info("Step 1: AuthenticationToken Generate - username: {}", username);
 
-        // 2. authenticate() 메서드 실행 (CustomUserDetailsService.loadUserByUsername 호출)
+        // authenticationManager 가 사용자 인증을 진행해 주는데 로그인 정보와 DB에 있는 사용자 정보를 비교하기 위해
+        // UserDetailsService 에 있는 loadUserByUsername 메서드를 내부적으로 '알아서' 호출해서
+        // 사용자를 인증한 후 성공하면(db에 있는 유저의 아이디, 비밀번호와 입력받은 로그인 정보가 일치하면) Authentication 객체를 반환
+        // 2. authenticationManager -> authenticate() 메서드 실행 (CustomUserDetailsService.loadUserByUsername 호출)
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         log.info("Step 2: Authentication Success - isAuthenticated: {}", authentication.isAuthenticated());
         log.info("{}", authentication);
+        // 사용자 인증이 끝나고 Authentication 이 성공적으로 반환되었다면 이를 SecurityContextHolder 에 저장 -> 내부적으로 실행
 
         // 3. 인증 정보를 기반으로 JWT 토큰 생성
         JwtToken jwtToken = jwtTokenProvider.generateToken(authentication);

@@ -21,6 +21,7 @@ import java.util.Optional;
 public class RecordController {
     private final RecordService recordService;
 
+    /*
     @PostMapping("/records")
     public ResponseEntity<Record> saveRecord(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam("file")MultipartFile file) throws Exception {
         Record record = recordService.saveRecord(userDetails, file);
@@ -34,10 +35,12 @@ public class RecordController {
         return ResponseEntity.ok(records);
     }
 
+     */
+
     // 음성파일 백앤드에서 받아서 recordIdx, time 저장 후 ai 넘겨줌
     @PostMapping("/input")
     public ResponseEntity<Record> fileInput(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam("file") MultipartFile file) throws Exception {
-        Record record = recordService.fileInput(userDetails, file);
+        Record record = recordService.fileInput(userDetails.getUsername(), file);
         return ResponseEntity.ok(record);
     }
 
@@ -58,6 +61,6 @@ public class RecordController {
     // 클라이언트가 알림 확인 시 checked -> true 로 업데이트
     @PatchMapping("/records/{id}/checked")
     public ResponseEntity<?> updateCheckedStatus(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable String id) {
-        return recordService.updateCheckedStatus(userDetails, id);
+        return recordService.updateCheckedStatus(userDetails.getUsername(), id);
     }
 }

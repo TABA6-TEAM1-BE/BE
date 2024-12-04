@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AiResultDto {
-    private String userIdx;
     private String recordIdx;
     private String result;
 }
