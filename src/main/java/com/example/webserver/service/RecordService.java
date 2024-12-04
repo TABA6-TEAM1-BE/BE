@@ -101,7 +101,7 @@ public class RecordService {
     }
 
     // ai 모델 -> 백앤드로 결과값 보내면 저장
-    public boolean updateRecordWithAIResult(String recordIdx, String result) {
+    public boolean updateRecordWithAIResult(String recordIdx, String result, boolean isHuman, String text) {
         Optional<Record> optionalRecord = recordRepository.findByRecordIdx(recordIdx);
 
         if (optionalRecord.isPresent()) {
@@ -110,11 +110,14 @@ public class RecordService {
             // 결과값과 결과 시간 업데이트
             record.setDeviceType(result);
             record.setResultTime(LocalDateTime.now());
+            if (isHuman) {
+                record.setText(text);
+            }
 
             recordRepository.save(record);
 
-            log.info("Record updated: recordIdx={}, result={}, resultTime={}",
-                    recordIdx, result, record.getResultTime());
+            log.info("Record updated: recordIdx={}, result={}, isHuman={}, text={}",
+                    recordIdx, result, isHuman, text);
             return true;
         } else {
             log.warn("Record with recordIdx {} not found", recordIdx);
